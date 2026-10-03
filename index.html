@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaceCraft — Marathon Pace & Split Calculator</title>
+  <meta name="description" content="Ultimate Marathon and Race Pace Calculator. Calculate exact kilometer and mile splits, pacing strategies (even, negative, positive), nutrition checkpoints, and print race-day pace bands.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-background">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+  </div>
+
+  <header class="app-header">
+    <div class="container header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Pace<span>Craft</span></h1>
+          <span class="badge">Marathon Edition</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="paceBandBtn" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="10" rx="2" ry="2"></rect>
+            <line x1="8" y1="7" x2="8" y2="17"></line>
+            <line x1="16" y1="7" x2="16" y2="17"></line>
+          </svg>
+          Race Wristband
+        </button>
+        <button id="exportCsvBtn" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    <!-- Distance Selector & Hero Settings -->
+    <section class="card control-hero">
+      <div class="card-header-row">
+        <div>
+          <span class="section-tag">Race Setup</span>
+          <h2 class="section-title">Target Finish Time & Strategy</h2>
+        </div>
+        <div class="distance-selector" role="tablist" aria-label="Select Race Distance">
+          <button type="button" class="dist-pill active" data-distance="marathon" id="distMarathon">Full Marathon (42.2k)</button>
+          <button type="button" class="dist-pill" data-distance="half" id="distHalf">Half (21.1k)</button>
+          <button type="button" class="dist-pill" data-distance="10k" id="dist10k">10K</button>
+          <button type="button" class="dist-pill" data-distance="5k" id="dist5k">5K</button>
+        </div>
+      </div>
+
+      <!-- Time Input Display -->
+      <div class="time-control-grid">
+        <div class="time-display-box">
+          <label class="input-label">Target Finish Time</label>
+          <div class="digital-clock" id="digitalClockDisplay">
+            <div class="clock-unit">
+              <input type="number" id="hoursInput" min="0" max="23" value="3" aria-label="Hours">
+              <span class="clock-label">HRS</span>
+            </div>
+            <span class="clock-colon">:</span>
+            <div class="clock-unit">
+              <input type="number" id="minutesInput" min="0" max="59" value="30" aria-label="Minutes">
+              <span class="clock-label">MIN</span>
+            </div>
+            <span class="clock-colon">:</span>
+            <div class="clock-unit">
+              <input type="number" id="secondsInput" min="0" max="59" value="00" aria-label="Seconds">
+              <span class="clock-label">SEC</span>
+            </div>
+          </div>
+          <div class="slider-wrapper">
+            <input type="range" id="timeSlider" min="7200" max="25200" step="30" value="12600" aria-label="Time scrubber slider">
+            <div class="slider-ticks">
+              <span>2h 00m</span>
+              <span>3h 00m</span>
+              <span>3h 30m</span>
+              <span>4h 00m</span>
+              <span>5h 00m</span>
+              <span>7h 00m</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="presets-and-strategy">
+          <div class="preset-group">
+            <span class="sub-label">Quick Marathon Targets</span>
+            <div class="preset-badges">
+              <button type="button" class="preset-chip" data-time="02:59:59">Sub 3:00</button>
+              <button type="button" class="preset-chip" data-time="03:14:59">Sub 3:15</button>
+              <button type="button" class="preset-chip active" data-time="03:30:00">3:30:00</button>
+              <button type="button" class="preset-chip" data-time="03:44:59">Sub 3:45</button>
+              <button type="button" class="preset-chip" data-time="03:59:59">Sub 4:00</button>
+              <button type="button" class="preset-chip" data-time="04:15:00">4:15:00</button>
+              <button type="button" class="preset-chip" data-time="04:30:00">4:30:00</button>
+              <button type="button" class="preset-chip" data-time="05:00:00">5:00:00</button>
+            </div>
+          </div>
+
+          <div class="strategy-group">
+            <div class="strategy-header">
+              <span class="sub-label">Pacing Strategy</span>
+              <span class="strategy-badge" id="strategyDescriptionBadge">Even Pace (0%)</span>
+            </div>
+            <div class="strategy-selector">
+              <button type="button" class="strategy-btn" data-strategy="negative">
+                <span class="icon">📉</span>
+                <span>Negative Split</span>
+                <small>Faster 2nd Half</small>
+              </button>
+              <button type="button" class="strategy-btn active" data-strategy="even">
+                <span class="icon">⚖️</span>
+                <span>Even Pace</span>
+                <small>Steady Rhythm</small>
+              </button>
+              <button type="button" class="strategy-btn" data-strategy="positive">
+                <span class="icon">📈</span>
+                <span>Positive Split</span>
+                <small>Conservative Finish</small>
+              </button>
+            </div>
+            
+            <div class="strategy-slider-container" id="strategySliderContainer" style="display: none;">
+              <div class="strategy-slider-header">
+                <span id="strategyVarianceLabel">Split Delta:</span>
+                <span class="highlight-val" id="varianceValueText">3.0%</span>
+              </div>
+              <input type="range" id="varianceSlider" min="1" max="8" step="0.5" value="3">
+              <div class="strategy-subtext" id="strategySubtext">Second half is ~3% faster than first half.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics Dashboard -->
+    <section class="metrics-grid">
+      <div class="metric-card primary-pace-km">
+        <div class="metric-header">
+          <span class="metric-title">Average Pace (Metric)</span>
+          <span class="metric-pill">KM</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-val" id="avgPaceKm">4:59</span>
+          <span class="metric-unit">/km</span>
+        </div>
+        <div class="metric-footer">
+          <span>Speed: <strong id="speedKmh">12.06 km/h</strong></span>
+        </div>
+      </div>
+
+      <div class="metric-card primary-pace-mi">
+        <div class="metric-header">
+          <span class="metric-title">Average Pace (Imperial)</span>
+          <span class="metric-pill">MILE</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-val" id="avgPaceMi">8:01</span>
+          <span class="metric-unit">/mi</span>
+        </div>
+        <div class="metric-footer">
+          <span>Speed: <strong id="speedMph">7.49 mph</strong></span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Half Marathon Checkpoint</span>
+          <span class="metric-pill">21.1 KM</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-val" id="halfSplitTime">1:45:00</span>
+          <span class="metric-unit">elapsed</span>
+        </div>
+        <div class="metric-footer">
+          <span id="halfSplitSubtext">Target 50% split mark</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">30K "The Wall" Checkpoint</span>
+          <span class="metric-pill">30.0 KM</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-val" id="thirtyKmSplitTime">2:29:17</span>
+          <span class="metric-unit">elapsed</span>
+        </div>
+        <div class="metric-footer">
+          <span>Remaining: <strong id="remainingFrom30k">12.2 km</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visual Pace Profile & Fueling Helper -->
+    <section class="card visual-card">
+      <div class="card-header-row">
+        <div>
+          <span class="section-tag">Pace Curve</span>
+          <h3 class="section-title">Split Progression & Profile</h3>
+        </div>
+        <div class="fuel-toggle-box">
+          <label class="switch-label" for="fuelReminderToggle">
+            <input type="checkbox" id="fuelReminderToggle" checked>
+            <span class="switch-slider"></span>
+            <span class="switch-text">⚡ Gel & Hydration Milestones</span>
+          </label>
+        </div>
+      </div>
+      <div class="chart-container">
+        <svg id="paceChartSvg" viewBox="0 0 900 180" preserveAspectRatio="none">
+          <!-- Dynamically generated SVG graph -->
+        </svg>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><span class="legend-color line-color"></span> Split Pace Profile</div>
+        <div class="legend-item"><span class="legend-color avg-color"></span> Average Pace Line</div>
+        <div class="legend-item"><span class="legend-color gel-color"></span> Energy Gel Checkpoint (approx. every 7km / 45m)</div>
+      </div>
+    </section>
+
+    <!-- Splits Table Section -->
+    <section class="card splits-card">
+      <div class="splits-toolbar">
+        <div class="splits-title-wrap">
+          <h3 class="section-title">Race Split Breakdown</h3>
+          <span class="splits-subtitle" id="splitsCountLabel">43 Splits Total (including 42.195 km finish)</span>
+        </div>
+
+        <div class="toolbar-controls">
+          <!-- Unit Toggle Button Group -->
+          <div class="unit-toggle" role="group" aria-label="Split Units">
+            <button type="button" class="unit-btn active" id="unitKmBtn" data-unit="km">Kilometers (km)</button>
+            <button type="button" class="unit-btn" id="unitMiBtn" data-unit="mi">Miles (mi)</button>
+          </div>
+
+          <!-- Highlight Filter -->
+          <button type="button" class="btn-filter" id="filterMilestonesBtn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span id="filterLabel">Show Key Milestones Only</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="table-responsive">
+        <table class="splits-table" id="splitsTable">
+          <thead>
+            <tr>
+              <th scope="col" class="th-split">Split</th>
+              <th scope="col" class="th-distance">Distance</th>
+              <th scope="col" class="th-pace">Target Pace</th>
+              <th scope="col" class="th-time">Split Time</th>
+              <th scope="col" class="th-cumulative">Cumulative Time</th>
+              <th scope="col" class="th-diff">Vs Even Pace</th>
+              <th scope="col" class="th-notes">Notes & Fueling</th>
+            </tr>
+          </thead>
+          <tbody id="splitsTableBody">
+            <!-- Rendered by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Key Race Milestones Summary Cards -->
+    <section class="card milestones-summary-card">
+      <h3 class="section-title">Major Race Gates & Cutoffs</h3>
+      <div class="milestones-grid" id="milestonesGrid">
+        <!-- 5k, 10k, 15k, 20k, Half, 25k, 30k, 35k, 40k, Finish -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Pace Wristband Modal -->
+  <div class="modal-backdrop" id="paceBandModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3>Race Day Pace Wristband</h3>
+          <p>Print or screenshot this wristband strip for race day.</p>
+        </div>
+        <button class="modal-close" id="closeModalBtn" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="wristband-options">
+          <label>Band Interval:
+            <select id="bandIntervalSelect">
+              <option value="5k" selected>Every 5 Kilometers + Half + Finish</option>
+              <option value="1k">Every Kilometer (Full detail)</option>
+              <option value="mile">Every Mile (Full 26.2)</option>
+            </select>
+          </label>
+          <label>Wristband Size:
+            <select id="bandWidthSelect">
+              <option value="standard" selected>Standard (3.5 cm / 1.4 in)</option>
+              <option value="slim">Slim (2.5 cm / 1.0 in)</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- The actual printable wristband element -->
+        <div class="wristband-preview-outer">
+          <div class="wristband-strip" id="wristbandStrip">
+            <div class="wristband-header">
+              <div class="wb-race">MARATHON</div>
+              <div class="wb-goal" id="wbGoalTime">3:30:00</div>
+              <div class="wb-pace" id="wbAvgPace">4:58/km • 8:00/mi</div>
+            </div>
+            <div class="wb-splits-container" id="wbSplitsContainer">
+              <!-- Rendered items -->
+            </div>
+            <div class="wb-footer">
+              <span>PACECRAFT</span>
+              <span>RUN STRONG</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="printPaceBandBtn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          Print Wristband
+        </button>
+        <button type="button" class="btn btn-primary" id="copyBandTextBtn">
+          Copy Text Summary
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toastMessage"></div>
+
+  <footer class="app-footer">
+    <div class="container footer-content">
+      <p>PaceCraft Runner's Suite • Crafted for Marathoners & Endurance Athletes</p>
+      <p class="sub">Standard Marathon Distance: 42.195 km (26.219 miles)</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
